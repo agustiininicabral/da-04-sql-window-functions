@@ -16,14 +16,18 @@ def test_all_window_queries_execute_with_expected_results() -> None:
     )
 
     ranking = results["Q01 Category revenue ranking"]
-    monthly = results["Q02 Monthly revenue trend, lag, rolling average, and running total"]
+    monthly = results[
+        "Q02 Monthly revenue trend, lag, rolling average, and running total"
+    ]
     customer_orders = results["Q03 Customer order sequence and days between purchases"]
     retention = results["Q04 Monthly cohort retention"]
 
     assert len(ranking) == 6
     assert ranking[0]["category"] == "Infantil"
     assert ranking[0]["revenue_rank"] == 1
-    assert sum(float(row["revenue"]) for row in ranking) == pytest.approx(608810.14, abs=0.01)
+    assert sum(float(row["revenue"]) for row in ranking) == pytest.approx(
+        608810.14, abs=0.01
+    )
 
     assert len(monthly) == 24
     assert monthly[0]["previous_month_revenue"] is None
@@ -37,7 +41,9 @@ def test_all_window_queries_execute_with_expected_results() -> None:
     first_month_cohorts = [row for row in retention if row["month_offset"] == 0]
     assert first_month_cohorts
     assert all(row["retention_pct"] == 100.0 for row in first_month_cohorts)
-    assert all(row["cohort_size"] == row["active_customers"] for row in first_month_cohorts)
+    assert all(
+        row["cohort_size"] == row["active_customers"] for row in first_month_cohorts
+    )
 
 
 def test_query_runner_rejects_unnamed_statements() -> None:
