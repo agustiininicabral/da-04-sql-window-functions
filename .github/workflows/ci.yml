@@ -34,8 +34,8 @@ jobs:
       - name: Run Ruff lint checks
         run: ruff check scripts tests
 
-      - name: Test SQL window queries
+      - name: Execute window function tests
         run: python -m pytest -q
 
-      - name: Run SQL examples
+      - name: Run window function examples
         run: python scripts/run_sql.py

@@ -1,20 +1,20 @@
 # SQL: Window Functions
 
-Proyecto de portfolio para practicar funciones de ventana con ventas sintéticas: ranking, `LAG`, acumulados, medias móviles y cohortes.
+Proyecto de portfolio de Data Analytics centrado en funciones de ventana: ranking, comparaciones mes a mes, promedios móviles, secuencias de compra y retención por cohorte.
 
 ![SQL CI](https://github.com/agustiininicabral/da-04-sql-window-functions/actions/workflows/ci.yml/badge.svg)
 
 ## Dataset
 
-- `02-data/raw/sales.csv`: 3.500 pedidos.
-- `02-data/raw/products.csv`: catálogo de 500 productos.
-- `02-data/raw/DATA_DICTIONARY.md`: definición de campos y limitaciones.
+- `02-data/raw/sales.csv`: 3.500 pedidos sintéticos entre enero de 2024 y diciembre de 2025.
+- `02-data/raw/products.csv`: catálogo sintético de 500 productos.
+- `02-data/raw/DATA_DICTIONARY.md`: columnas, granularidad y limitaciones.
 
-Los datos son ficticios. El runner carga los CSV en SQLite en memoria; no requiere un servidor de base de datos ni modifica archivos originales.
+Los importes son unidades monetarias ficticias; no representan una moneda real ni resultados de una empresa.
 
-## Ejecutar en Windows PowerShell
+## Requisitos y ejecución en Windows
 
-Desde la raíz del repositorio:
+Requiere Python 3.12. Desde PowerShell, en la raíz del repositorio:
 
 ```powershell
 py -3.12 -m venv .venv
@@ -26,29 +26,31 @@ ruff format --check scripts tests
 ruff check scripts tests
 ```
 
-GitHub Actions ejecuta las mismas verificaciones en cada push y pull request.
+El ejecutor crea tablas temporales en SQLite en memoria, carga los CSV y corre las consultas de `03-work/sql/02_window_examples.sql`. No necesita servidor de base de datos ni modifica los archivos originales. GitHub Actions corre las mismas validaciones en cada push y pull request.
 
-## Consultas incluidas
+## Consultas de ventana incluidas
 
-- Q01–Q03: ingresos por categoría, margen por canal y top clientes.
-- Q04: `LAG` para variación mensual MoM.
-- Q05: ingreso acumulado con `SUM() OVER`.
-- Q06: promedio móvil de siete fechas de pedido observadas.
-- Q07: actividad mensual por cohorte de primera compra.
-- Q08: `ROW_NUMBER()` para top tres clientes por país.
-
-La media móvil usa las siete fechas observadas más recientes; si faltan fechas calendario, no representa necesariamente siete días consecutivos. El análisis de cohortes muestra actividad mensual, pero no debe confundirse con una predicción de retención.
+1. **Ranking por categoría:** `DENSE_RANK()` y participación porcentual sobre el total.
+2. **Tendencia mensual:** `LAG()`, variación absoluta y porcentual, promedio móvil de tres meses y acumulado.
+3. **Secuencia por cliente:** `ROW_NUMBER()`, fecha de compra anterior y días entre pedidos con `LAG()`.
+4. **Retención por cohorte:** primer mes de compra, mes de actividad, offset mensual, tamaño de cohorte y porcentaje de retención.
 
 ## Resultados
 
-Ver [05-results/report.md](05-results/report.md) para métricas, ejemplos y limitaciones. Los importes son unidades monetarias sintéticas.
+El análisis con cifras verificadas está en [05-results/report.md](05-results/report.md). Las consultas se prueban automáticamente para detectar errores de ejecución, verificar los totales y validar que las cohortes comiencen con 100% de clientes activos en el mes inicial.
+
+## Estructura
+
+- `01-requirements/`: alcance e hipótesis.
+- `02-data/raw/`: datos originales y diccionario.
+- `03-work/sql/`: consultas SQL.
+- `scripts/run_sql.py`: ejecutor reproducible.
+- `tests/test_sql_runner.py`: pruebas automatizadas.
+- `05-results/report.md`: KPIs, insights y limitaciones.
 
 ## Limitaciones
 
-- El dataset no representa una empresa real.
-- Los datos de ventas no contienen `product_id`.
-- El margen usa `net_revenue - cost` y no incluye gastos operativos ni de marketing.
-- Las métricas de cohorte son descriptivas y dependen del horizonte de datos disponible.
+Los datos son sintéticos. El archivo de ventas no incluye `product_id`, así que no permite analizar retención por producto ni vincular una compra a un SKU. La retención mide presencia del cliente en un mes calendario; un cliente puede regresar después de saltarse un mes, por lo que la curva no tiene por qué ser estrictamente decreciente.
 
 ## Licencia
 

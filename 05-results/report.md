@@ -2,51 +2,57 @@
 
 ## Pregunta de negocio
 
-¿Cómo evoluciona el ingreso mensual y qué patrones descriptivos aparecen al usar funciones de ventana sobre ventas sintéticas?
+¿Cómo evolucionan los ingresos mensuales, qué categorías contribuyen más y qué patrones de recompra aparecen al observar secuencias de pedidos y cohortes de clientes?
 
-## KPIs base
+## KPIs del dataset sintético
 
 | KPI | Resultado |
 |---|---:|
 | Pedidos | 3.500 |
+| Productos en catálogo | 500 |
 | Clientes únicos | 877 |
 | Unidades vendidas | 10.602 |
 | Ingresos netos | 608.810,14 |
 | Costo estimado | 364.075,27 |
 | Margen bruto estimado | 244.734,87 |
-| Tasa de margen estimada | 40,20% |
+| Margen sobre ingresos | 40,20% |
+| Período analizado | Ene 2024 – Dic 2025 |
 
-## Insights del análisis temporal
+## Insights
 
-1. **El mes con mayor ingreso fue agosto de 2025**, con 30.039,91; mayo de 2025 quedó cerca con 29.938,16.
-2. **El menor ingreso mensual fue junio de 2024**, con 21.599,70.
-3. **El mayor crecimiento MoM fue +21,23% en agosto de 2025**, frente a julio de 2025. El mayor descenso fue −25,30% en junio de 2025, frente a mayo de 2025.
-4. **El acumulado mensual termina en 608.810,14**, consistente con la suma de ingresos del dataset. La prueba automatizada comprueba este invariante.
-5. **La media móvil de siete observaciones suaviza variaciones diarias**, pero se calcula sobre fechas con ventas observadas, no sobre un calendario continuo.
-6. **Las cohortes permiten comparar clientes activos por mes desde su primera compra.** Es una vista descriptiva; no prueba causalidad ni sustituye una definición de retención con ventanas y denominadores acordados.
+1. **Infantil lidera por categoría.** Genera 105.711,81, equivalente al 17,36% de los ingresos. OTC aporta 104.438,16 y Perfumería 103.784,47. Las tres categorías suman aproximadamente 51,56% del total.
+2. **El total anual es estable.** Los ingresos suman 304.482,45 en 2024 y 304.327,69 en 2025; la diferencia es de -154,76, aproximadamente -0,05%. No se observa crecimiento anual relevante en este dataset.
+3. **Agosto de 2025 fue el mes de mayores ingresos.** Registró 30.039,91, seguido por mayo de 2025 con 29.938,16. Junio de 2024 fue el menor mes, con 21.599,70.
+4. **Paid Social es el canal con más ingresos.** Aporta 95.217,15; Email queda cerca, con 94.856,04. La diferencia es pequeña y no demuestra que un canal sea más rentable después de costos de adquisición.
+5. **La ventana mensual permite separar cambio de tendencia y nivel.** `LAG()` calcula la variación contra el mes anterior, el promedio móvil de tres meses reduce parte del ruido mensual y la suma acumulada muestra el progreso contra el total de 608.810,14.
+6. **La retención por cohorte requiere interpretación cuidadosa.** El cálculo considera clientes activos en cada mes calendario después de su primera compra. Como un cliente puede saltarse un mes y regresar más tarde, los porcentajes pueden subir entre meses; no se deben interpretar como una curva necesariamente decreciente.
+7. **La secuencia por cliente identifica recompra.** `ROW_NUMBER()` ordena pedidos por cliente y `LAG()` calcula la fecha anterior y los días entre compras, una base útil para análisis de frecuencia y segmentación RFM.
 
-## Técnicas SQL
+## Cómo leer las funciones
 
-- `LAG()`: ingreso del mes anterior y cambio porcentual MoM.
-- `SUM() OVER (... UNBOUNDED PRECEDING)`: ingreso acumulado.
-- `AVG() OVER (... 6 PRECEDING)`: promedio móvil de siete fechas observadas.
-- `MIN()`, CTEs y `COUNT(DISTINCT)`: cohorte de primera compra y actividad mensual.
-- `ROW_NUMBER() OVER (PARTITION BY country ...)`: top tres clientes por país.
-
-## Validación
-
-- Ocho consultas SQL con nombre se ejecutan en SQLite.
-- Los tests verifican 24 meses, cambio MoM nulo para el primer mes, acumulado final y rankings por país.
-- Las consultas de ventana mantienen el total de ingresos netos de 608.810,14.
-- GitHub Actions ejecuta el runner y los tests en cada cambio.
+- `DENSE_RANK()`: ordena categorías por ingresos sin saltos en la numeración cuando hay empates.
+- `LAG()`: recupera el valor de la fila anterior para calcular cambios o intervalos.
+- `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`: calcula una ventana móvil de tres observaciones mensuales.
+- `SUM() OVER (... UNBOUNDED PRECEDING ...)`: acumula ingresos a través del tiempo.
+- `ROW_NUMBER() OVER (PARTITION BY customer_id ...)`: numera las compras de cada cliente.
+- La consulta de cohortes calcula el mes inicial y los meses de actividad, y expresa los clientes activos como porcentaje del tamaño inicial.
 
 ## Recomendaciones
 
-- Para medir retención, definir cohortes, horizonte y denominador antes de interpretar el porcentaje.
-- Para medias móviles de días calendario, generar una tabla calendario y completar fechas sin ventas con cero.
-- Añadir `product_id` a las ventas para analizar producto individual.
-- Incorporar costos de adquisición para comparar rentabilidad por canal.
+- Comparar períodos equivalentes y sumar una visualización de ingresos, variación mensual y promedio móvil.
+- Complementar la retención con cohortes de primera compra y una definición explícita de retorno; no asumir que el cliente debe comprar todos los meses.
+- Agregar `product_id` a las ventas para analizar la secuencia de compra por producto.
+- Incluir costos de marketing y operativos para estimar rentabilidad real por canal.
+- Añadir un análisis RFM con reglas documentadas si el objetivo es priorizar clientes para campañas.
 
-## Limitaciones
+## Riesgos y limitaciones
 
-Los datos son sintéticos y los importes no están asociados a una moneda real. El margen es una aproximación, y los cambios MoM no implican tendencias causales.
+- Dataset sintético; las conclusiones no representan una empresa real.
+- Los importes no tienen moneda real asociada.
+- El costo es estimado; margen bruto no equivale a beneficio neto.
+- No hay `product_id` en ventas.
+- La actividad por mes calendario no implica compras mensuales continuas ni prueba causalidad.
+
+## Reproducibilidad
+
+Las cuatro consultas de ventana se ejecutan en SQLite en memoria y se validan con pytest. La automatización comprueba el total de ingresos, los 24 meses, el acumulado final y el 100% de retención en el mes de inicio de cada cohorte.
