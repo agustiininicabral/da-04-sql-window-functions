@@ -1,3 +1,5 @@
--- Cargar sales.csv y products.csv como tablas 'sales' y 'products'.
--- En SQL Server: BULK INSERT / OPENROWSET.
--- En Postgres: COPY.
+-- The CSV files are stored in 02-data/raw/.
+-- Run the reproducible in-memory SQLite workflow from the repository root:
+--     python scripts/run_sql.py
+-- Window-function queries are in 03-work/sql/02_window_examples.sql.
+-- The runner loads the original CSV files without modifying them.
