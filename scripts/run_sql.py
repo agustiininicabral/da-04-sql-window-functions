@@ -10,10 +10,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SALES_PATH = ROOT / "02-data" / "raw" / "sales.csv"
 PRODUCTS_PATH = ROOT / "02-data" / "raw" / "products.csv"
-SQL_PATHS = (
-    ROOT / "03-work" / "sql" / "01_core_queries.sql",
-    ROOT / "03-work" / "sql" / "02_window_examples.sql",
-)
+SQL_PATH = ROOT / "03-work" / "sql" / "02_window_examples.sql"
 IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
@@ -74,22 +71,18 @@ def execute_queries(
     return results
 
 
-def run_queries() -> dict[str, list[dict[str, Any]]]:
+def run_queries(
+    sales_path: Path = SALES_PATH,
+    products_path: Path = PRODUCTS_PATH,
+    sql_path: Path = SQL_PATH,
+) -> dict[str, list[dict[str, Any]]]:
     with sqlite3.connect(":memory:") as connection:
-        sales_rows = load_csv(connection, SALES_PATH, "sales")
-        product_rows = load_csv(connection, PRODUCTS_PATH, "products")
-        results: dict[str, list[dict[str, Any]]] = {}
-        for sql_path in SQL_PATHS:
-            file_results = execute_queries(
-                connection,
-                sql_path.read_text(encoding="utf-8"),
-            )
-            duplicate_names = results.keys() & file_results.keys()
-            if duplicate_names:
-                raise ValueError(
-                    f"Duplicate query names across files: {sorted(duplicate_names)}"
-                )
-            results.update(file_results)
+        sales_rows = load_csv(connection, sales_path, "sales")
+        product_rows = load_csv(connection, products_path, "products")
+        results = execute_queries(
+            connection,
+            sql_path.read_text(encoding="utf-8"),
+        )
 
     print(f"Loaded {sales_rows} sales rows and {product_rows} products.")
     for name, rows in results.items():
