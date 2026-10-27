@@ -1,48 +1,55 @@
 # SQL: Window Functions
 
-## Objetivo
-Análisis avanzado con ventanas (ranking, moving averages, cohort proxies).
+Proyecto de portfolio para practicar funciones de ventana con ventas sintéticas: ranking, `LAG`, acumulados, medias móviles y cohortes.
 
-## Contexto
-Proyecto de portfolio Data Analytics con dataset ficticio de ventas (3.500 filas) y catálogo de productos. El foco es reproducibilidad y storytelling.
+![SQL CI](https://github.com/agustiininicabral/da-04-sql-window-functions/actions/workflows/ci.yml/badge.svg)
 
-## Alcance
-- Preparación de datos
-- Análisis exploratorio
-- KPIs e insights
-- Reporte final
+## Dataset
 
-## Fuera de alcance
-- Modelos predictivos complejos
-- Machine Learning en producción
-- Infraestructura cloud
+- `02-data/raw/sales.csv`: 3.500 pedidos.
+- `02-data/raw/products.csv`: catálogo de 500 productos.
+- `02-data/raw/DATA_DICTIONARY.md`: definición de campos y limitaciones.
 
-## Herramientas
-- Excel / Power Query (pasos documentados)
-- SQL (scripts)
-- Power BI (notas y layout)
-- Markdown para documentación
+Los datos son ficticios. El runner carga los CSV en SQLite en memoria; no requiere un servidor de base de datos ni modifica archivos originales.
 
-## Entregables
-- Dataset (raw + processed)
-- Data Dictionary
-- SQL scripts
-- Reporte final con insights
-- Evidencia (capturas/exports)
+## Ejecutar en Windows PowerShell
 
-## Cómo reproducir
-1) Copiar datasets desde `_shared_datasets/` a `02-data/raw/`.
-2) Ejecutar SQL en `03-work/sql/` (o adaptar a tu motor).
-3) Documentar transformaciones en `02-data/processed/`.
-4) Completar `05-results/report.md` con KPIs e insights.
+Desde la raíz del repositorio:
 
-## Evidencia
-- Ver carpeta `04-evidence/` (capturas, exports, logs).
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements-dev.txt
+python scripts/run_sql.py
+python -m pytest -q
+ruff format --check scripts tests
+ruff check scripts tests
+```
+
+GitHub Actions ejecuta las mismas verificaciones en cada push y pull request.
+
+## Consultas incluidas
+
+- Q01–Q03: ingresos por categoría, margen por canal y top clientes.
+- Q04: `LAG` para variación mensual MoM.
+- Q05: ingreso acumulado con `SUM() OVER`.
+- Q06: promedio móvil de siete fechas de pedido observadas.
+- Q07: actividad mensual por cohorte de primera compra.
+- Q08: `ROW_NUMBER()` para top tres clientes por país.
+
+La media móvil usa las siete fechas observadas más recientes; si faltan fechas calendario, no representa necesariamente siete días consecutivos. El análisis de cohortes muestra actividad mensual, pero no debe confundirse con una predicción de retención.
 
 ## Resultados
-- Ver `05-results/report.md`.
 
-## Próximos pasos
-- Publicar dashboard (Power BI) con capturas en `04-evidence/`
-- Agregar README con link a demo / pbix
-- Crear data model estrella en repo 05 y reutilizar
+Ver [05-results/report.md](05-results/report.md) para métricas, ejemplos y limitaciones. Los importes son unidades monetarias sintéticas.
+
+## Limitaciones
+
+- El dataset no representa una empresa real.
+- Los datos de ventas no contienen `product_id`.
+- El margen usa `net_revenue - cost` y no incluye gastos operativos ni de marketing.
+- Las métricas de cohorte son descriptivas y dependen del horizonte de datos disponible.
+
+## Licencia
+
+MIT.
