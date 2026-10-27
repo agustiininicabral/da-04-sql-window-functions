@@ -1,3 +1,5 @@
--- Cargar sales.csv y products.csv como tablas 'sales' y 'products'.
--- En SQL Server: BULK INSERT / OPENROWSET.
--- En Postgres: COPY.
+-- CSV files are committed under 02-data/raw/.
+-- Run the named SQL examples with:
+--     python scripts/run_sql.py
+-- The runner loads both CSV files into an in-memory SQLite database.
+-- The moving average is based on observed order dates, not a complete calendar.
