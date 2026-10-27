@@ -1,23 +1,23 @@
--- SQL Starter (PostgreSQL/SQL Server friendly)
--- 1) Top categorías por ingresos
-SELECT category, SUM(net_revenue) AS revenue
+-- SQL basics included for comparison with windowed analysis.
+-- QUERY: Q01 Top categories by net revenue
+SELECT category, ROUND(SUM(CAST(net_revenue AS REAL)), 2) AS revenue
 FROM sales
 GROUP BY category
 ORDER BY revenue DESC;
 
--- 2) Margen por canal
+-- QUERY: Q02 Estimated gross margin by channel
 SELECT channel,
-       SUM(net_revenue) AS revenue,
-       SUM(net_revenue - cost) AS gross_margin
+       ROUND(SUM(CAST(net_revenue AS REAL)), 2) AS revenue,
+       ROUND(SUM(CAST(net_revenue AS REAL) - CAST(cost AS REAL)), 2) AS gross_margin
 FROM sales
 GROUP BY channel
 ORDER BY gross_margin DESC;
 
--- 3) Clientes más valiosos (LTV proxy)
+-- QUERY: Q03 Top customers by cumulative net revenue
 SELECT customer_id,
-       SUM(net_revenue) AS ltv_proxy,
+       ROUND(SUM(CAST(net_revenue AS REAL)), 2) AS revenue_lifetime_proxy,
        COUNT(*) AS orders
 FROM sales
 GROUP BY customer_id
-ORDER BY ltv_proxy DESC
+ORDER BY revenue_lifetime_proxy DESC
 LIMIT 20;
