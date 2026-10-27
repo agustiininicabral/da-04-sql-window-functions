@@ -1,5 +1,5 @@
--- CSV files are committed under 02-data/raw/.
--- Run the named SQL examples with:
+-- The CSV files are stored in 02-data/raw/.
+-- Run the reproducible in-memory SQLite workflow from the repository root:
 --     python scripts/run_sql.py
--- The runner loads both CSV files into an in-memory SQLite database.
--- The moving average is based on observed order dates, not a complete calendar.
+-- Window-function queries are in 03-work/sql/02_window_examples.sql.
+-- The runner loads the original CSV files without modifying them.
