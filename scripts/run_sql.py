@@ -86,7 +86,9 @@ def run_queries() -> dict[str, list[dict[str, Any]]]:
             )
             duplicate_names = results.keys() & file_results.keys()
             if duplicate_names:
-                raise ValueError(f"Duplicate query names across files: {sorted(duplicate_names)}")
+                raise ValueError(
+                    f"Duplicate query names across files: {sorted(duplicate_names)}"
+                )
             results.update(file_results)
 
     print(f"Loaded {sales_rows} sales rows and {product_rows} products.")
